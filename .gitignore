@@ -1,6 +1,6 @@
 # Project exclude paths
 /core/target/
-/desktop/target/
+/swing/target/
 /javafx/target/
 /kotlin/target/
 /opengl/target/
