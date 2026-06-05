@@ -15,9 +15,9 @@ Enjoy!
 ### Example images
 
 ###### Fire
-![Fire](https://github.com/blafoo/mandelbrot/blob/master/images/mandelbrot_-0%2C237953_-0%2C826216_z35%2C53x.png?raw=true)
+![https://github.com/blafoo/mandelbrot/blob/master/images/mandelbrot_-0%2C237953_-0%2C826216_z35%2C53x.png](https://github.com/blafoo/mandelbrot/blob/master/images/mandelbrot_-0%2C237953_-0%2C826216_z35%2C53x.png?raw=true)
 
 ###### Ocean
-![Ocean](https://github.com/blafoo/mandelbrot/blob/master/images/mandelbrot_0%2C373753_0%2C596020_z4814%2C82x.png?raw=true)
+![https://github.com/blafoo/mandelbrot/blob/master/images/mandelbrot_0%2C373753_0%2C596020_z4814%2C82x.png](https://github.com/blafoo/mandelbrot/blob/master/images/mandelbrot_0%2C373753_0%2C596020_z4814%2C82x.png?raw=true)
 
 
