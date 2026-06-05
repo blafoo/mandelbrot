@@ -1,0 +1,15 @@
+# Project exclude paths
+/core/target/
+/desktop/target/
+/javafx/target/
+/kotlin/target/
+/opengl/target/
+/springboot/target/
+/vaadin/target/
+/vaadin/node_modules/
+/android/build/
+/android/.gradle/
+/vaadin/src/main/frontend/generated/
+/.idea/
+/vaadin/package-lock.json
+/vaadin/vite.generated.ts
