@@ -23,12 +23,9 @@ import org.jspecify.annotations.Nullable;
 import java.io.ByteArrayInputStream;
 import java.util.UUID;
 
-
-/// Bedienung (analog zu Desktop / JavaFX / Spring-Boot-Web-UI):
-/// * **Linksklick** auf das Bild → 2× hineinzoomen am Klickpunkt
-/// * **Rechtsklick** auf das Bild → 2× herauszoomen am Klickpunkt
+/// Bedienung:
 /// * **Mausrad** über dem Bild → Zoom in/out am Cursor (1,25×)
-/// * **Shift + Drag** → Bildausschnitt verschieben (Pan)
+/// * **Drag** → Bildausschnitt verschieben (Pan)
 /// * Buttons → herauszoomen, schwenken, zurücksetzen
 /// * ComboBox → Farbschema wechseln
 /// * IntegerField → maximale Iterationen anpassen
@@ -89,13 +86,12 @@ public class MandelbrotMainView extends VerticalLayout {
         iterField.addValueChangeListener(e -> {
             Integer v = e.getValue();
             if (v != null) {
-                // Java 21+: Math.clamp ersetzt eigenen Bereichscheck
                 maxIterations = Math.clamp(v, 50, 5000);
                 refresh();
             }
         });
 
-        var zoomOut = new Button("Zoom −", VaadinIcon.MINUS.create(), _ -> {
+        var zoomOut = new Button("Zoom out", _ -> {
             zoom /= 2.0;
             refresh();
         });
@@ -112,20 +108,18 @@ public class MandelbrotMainView extends VerticalLayout {
             iterField.setValue(maxIterations);
             refresh();
         });
-        reset.addThemeVariants(ButtonVariant.LUMO_PRIMARY);
+        reset.addThemeVariants(ButtonVariant.PRIMARY);
 
         // Save-Button: liefert das aktuell angezeigte PNG als Download.
         // DownloadHandler (Vaadin 24.8+) liefert pro Klick ein frisches PNG mit
         // sinnvollem Dateinamen wie "mandelbrot_-0.745000_0.110000_z4.00x.png".
         var saveButton = new Button("Speichern", VaadinIcon.DOWNLOAD.create());
-        saveButton.addThemeVariants(ButtonVariant.LUMO_SUCCESS);
         var saveAnchor = new Anchor();
         saveAnchor.setHref(buildSaveDownloadHandler());
         saveAnchor.add(saveButton);
         saveAnchor.setTarget(AnchorTarget.BLANK);
 
-        var toolbar = new HorizontalLayout(schemeBox, iterField,
-                zoomOut, panLeft, panRight, panUp, panDown, reset, saveAnchor);
+        var toolbar = new HorizontalLayout(schemeBox, iterField, zoomOut, panLeft, panRight, panUp, panDown, reset, saveAnchor);
         toolbar.setAlignItems(FlexComponent.Alignment.END);
         toolbar.setSpacing(true);
         return toolbar;
@@ -141,8 +135,7 @@ public class MandelbrotMainView extends VerticalLayout {
                 return DownloadResponse.error(404, "Noch kein Bild gerendert");
             }
             var name = "mandelbrot_%.6f_%.6f_z%.2fx.png".formatted(centerX, centerY, zoom);
-            return new DownloadResponse(new ByteArrayInputStream(png),
-                    name, "image/png", png.length);
+            return new DownloadResponse(new ByteArrayInputStream(png), name, "image/png", png.length);
         });
     }
 
@@ -150,11 +143,11 @@ public class MandelbrotMainView extends VerticalLayout {
         image.setWidth(IMG_WIDTH + "px");
         image.setHeight(IMG_HEIGHT + "px");
         image.getStyle()
-                .set("border", "1px solid var(--lumo-contrast-20pct)")
+                .set("border", "1px solid var(--aura-contrast-20pct)")
                 .set("cursor", "crosshair")
                 .set("background", "#000");
-        image.setAlt("Mandelbrot-Menge");
-        // Browser-eigenes Bild-Ziehen unterdrücken (sonst kollidiert es mit Shift+Drag)
+        image.setAlt("Apfelmännchen");
+        // Browser-eigenes Bild-Ziehen unterdrücken (sonst kollidiert es mit Drag)
         image.getElement().setAttribute("draggable", "false");
         return image;
     }
@@ -164,21 +157,12 @@ public class MandelbrotMainView extends VerticalLayout {
         super.onAttach(attachEvent);
         // Native DOM-Listener registrieren – alle Maus-Interaktionen rufen
         // @ClientCallable-Methoden auf der View auf.
-        //   - Linksklick           → zoomAt(2.0)
-        //   - Rechtsklick          → zoomAt(0.5) + preventDefault
-        //   - Mausrad              → zoomAt(1.25 bzw. 0.8) + preventDefault
-        //   - Shift + Drag (links) → panBy(dx, dy) beim Loslassen
+        //   - Mausrad → zoomAt(1.25 bzw. 0.8) + preventDefault
+        //   - Drag (links) → panBy(dx, dy) beim Loslassen
         // `this.$server` referenziert die View, weil executeJs auf getElement() läuft.
         getElement().executeJs("""
                 const img = $0;
                 const srv = this.$server;
-                img.addEventListener('click', e => {
-                    srv.zoomAt(e.offsetX, e.offsetY, 2.0);
-                });
-                img.addEventListener('contextmenu', e => {
-                    e.preventDefault();
-                    srv.zoomAt(e.offsetX, e.offsetY, 0.5);
-                });
                 img.addEventListener('wheel', e => {
                     e.preventDefault();
                     const r = img.getBoundingClientRect();
@@ -188,7 +172,7 @@ public class MandelbrotMainView extends VerticalLayout {
                 }, { passive: false });
                 let drag = null;
                 img.addEventListener('mousedown', e => {
-                    if (e.button !== 0 || !e.shiftKey) return;
+                    if (e.button !== 0) return;
                     drag = { x: e.clientX, y: e.clientY, dx: 0, dy: 0 };
                     e.preventDefault();
                 });
@@ -236,8 +220,7 @@ public class MandelbrotMainView extends VerticalLayout {
     }
 
     private RenderParams currentParams() {
-        return new RenderParams(IMG_WIDTH, IMG_HEIGHT,
-                centerX, centerY, zoom, maxIterations, colorScheme);
+        return new RenderParams(IMG_WIDTH, IMG_HEIGHT, centerX, centerY, zoom, maxIterations, colorScheme);
     }
 
     private void refresh() {
@@ -257,17 +240,10 @@ public class MandelbrotMainView extends VerticalLayout {
         // DownloadHandler (Vaadin 24.8+) ersetzt das veraltete StreamResource.
         // Eindeutiger Dateiname pro Render erzwingt Browser-Reload des Bildes.
         var name = "mandelbrot-" + UUID.randomUUID() + ".png";
-        var handler = DownloadHandler.fromInputStream(_ ->
-                new DownloadResponse(new ByteArrayInputStream(png),
-                        name, "image/png", png.length));
+        var handler = DownloadHandler.fromInputStream(_ -> new DownloadResponse(new ByteArrayInputStream(png), name, "image/png", png.length));
         image.setSrc(handler);
 
-        status.setText("Center=(%.6f, %.6f)  Zoom=%.2fx  Iter=%d  Schema=%s  Render=%d ms"
-                .formatted(centerX, centerY, zoom, maxIterations,
-                        colorScheme.displayName(), ms));
+        status.setText("Center=(%.6f, %.6f) | Zoom=%.2fx | Iter=%d | Schema=%s | Render=%d ms"
+                .formatted(centerX, centerY, zoom, maxIterations, colorScheme.displayName(), ms));
     }
 }
-
-
-
-
