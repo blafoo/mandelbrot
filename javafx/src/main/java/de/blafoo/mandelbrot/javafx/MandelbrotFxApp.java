@@ -17,7 +17,6 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Priority;
-import javafx.scene.layout.Region;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 import org.jspecify.annotations.Nullable;
@@ -42,9 +41,9 @@ public class MandelbrotFxApp extends Application {
     private @Nullable PixelBuffer<IntBuffer> pixelBuffer;
     private int[] pixels = new int[0];
 
-    private double centerX = -0.5, centerY = 0.0;
-    private double zoom = 1.0;
-    private int maxIterations = 300;
+    private double centerX = RenderParams.DEFAULT_CENTER_X, centerY = RenderParams.DEFAULT_CENTER_Y;
+    private double zoom = RenderParams.DEFAULT_ZOOM;
+    private int maxIterations = RenderParams.DEFAULT_ITERATIONS;
     private ColorScheme colorScheme = ColorScheme.defaultScheme();
 
     private double dragStartX, dragStartY;
@@ -63,12 +62,10 @@ public class MandelbrotFxApp extends Application {
         root.setCenter(canvas);
         root.setBottom(buildStatusBar());
 
-        canvas.widthProperty().addListener((obs, o, n) -> rerender());
-        canvas.heightProperty().addListener((obs, o, n) -> rerender());
+        canvas.widthProperty().addListener((_, _, _) -> rerender());
+        canvas.heightProperty().addListener((_, _, _) -> rerender());
 
         // Canvas größenänderbar machen
-        Region center = new Region();
-        center.setMinSize(0, 0);
         canvas.widthProperty().bind(root.widthProperty());
         canvas.heightProperty().bind(root.heightProperty().subtract(80));
 
@@ -93,19 +90,25 @@ public class MandelbrotFxApp extends Application {
             }
             @Override public @Nullable ColorScheme fromString(@Nullable String s) { return null; }
         });
-        schemes.valueProperty().addListener((obs, o, n) -> {
-            if (n != null) { colorScheme = n; rerender(); }
+        schemes.valueProperty().addListener((_, _, n) -> {
+            colorScheme = n;
+            rerender();
         });
 
         Spinner<Integer> iterSpinner = new Spinner<>(50, 10000, maxIterations, 50);
         iterSpinner.setEditable(true);
         iterSpinner.setPrefWidth(110);
-        iterSpinner.valueProperty().addListener((obs, o, n) -> {
+        iterSpinner.valueProperty().addListener((_, _, n) -> {
             maxIterations = n; rerender();
         });
 
         Button reset = new Button("Reset");
-        reset.setOnAction(_ -> { centerX = -0.5; centerY = 0; zoom = 1.0; rerender(); });
+        reset.setOnAction(_ -> {
+            centerX = RenderParams.DEFAULT_CENTER_X;
+            centerY = RenderParams.DEFAULT_CENTER_Y;
+            zoom = RenderParams.DEFAULT_ZOOM;
+            rerender();
+        });
 
         Button save = new Button("💾 Speichern");
         save.setOnAction(_ -> saveCurrentImage());
@@ -124,8 +127,7 @@ public class MandelbrotFxApp extends Application {
         chooser.setTitle("Mandelbrot speichern");
         chooser.getExtensionFilters().add(
                 new FileChooser.ExtensionFilter("PNG-Bild", "*.png"));
-        chooser.setInitialFileName("mandelbrot_%.6f_%.6f_z%.2fx.png"
-                .formatted(centerX, centerY, zoom));
+        chooser.setInitialFileName(currentParams().generateFilename());
         File file = chooser.showSaveDialog(stage);
         if (file == null) return;
         try {

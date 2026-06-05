@@ -1,6 +1,7 @@
 package de.blafoo.mandelbrot.opengl;
 
 import de.blafoo.mandelbrot.core.ColorScheme;
+import de.blafoo.mandelbrot.core.RenderParams;
 
 import org.lwjgl.glfw.GLFWErrorCallback;
 import org.lwjgl.opengl.GL;
@@ -24,8 +25,8 @@ public final class MandelbrotGLApp {
     private int vao;
 
     // View-State
-    private double centerX = -0.5, centerY = 0.0;
-    private double zoom = 1.0;
+    private double centerX = RenderParams.DEFAULT_CENTER_X, centerY = RenderParams.DEFAULT_CENTER_Y;
+    private double zoom = RenderParams.DEFAULT_ZOOM;
     private int maxIter = 500;
     private int schemeIndex = 0;
 
@@ -38,7 +39,7 @@ public final class MandelbrotGLApp {
     // Uniform-Locations
     private int locResolution, locCenter, locZoom, locMaxIter, locScheme;
 
-    void main(String[] args) {
+    void main() {
         new MandelbrotGLApp().run();
     }
 
@@ -113,7 +114,7 @@ public final class MandelbrotGLApp {
             if (dragging) {
                 double scale = currentScale();
                 centerX = dragStartCenterX - (x - dragStartX) * scale;
-                centerY = dragStartCenterY - (y - dragStartY) * scale;
+                centerY = dragStartCenterY + (y - dragStartY) * scale;
             }
         });
 
@@ -126,11 +127,11 @@ public final class MandelbrotGLApp {
                 double factor = yoff > 0 ? 1.2 : 1 / 1.2;
                 double scale = currentScale();
                 double mouseRe = centerX + (mx - fbWidth / 2.0) * scale;
-                double mouseIm = centerY + (my - fbHeight / 2.0) * scale;
+                double mouseIm = centerY - (my - fbHeight / 2.0) * scale;
                 zoom *= factor;
                 double newScale = currentScale();
                 centerX = mouseRe - (mx - fbWidth / 2.0) * newScale;
-                centerY = mouseIm - (my - fbHeight / 2.0) * newScale;
+                centerY = mouseIm + (my - fbHeight / 2.0) * newScale;
                 updateTitle();
             }
         });
@@ -138,7 +139,7 @@ public final class MandelbrotGLApp {
         glfwSetKeyCallback(window, (_, key, _, action, _) -> {
             if (action != GLFW_PRESS) return;
             switch (key) {
-                case GLFW_KEY_R -> { centerX = -0.5; centerY = 0; zoom = 1; updateTitle(); }
+                case GLFW_KEY_R -> { centerX = RenderParams.DEFAULT_CENTER_X; centerY = RenderParams.DEFAULT_CENTER_Y; zoom = RenderParams.DEFAULT_ZOOM; updateTitle(); }
                 case GLFW_KEY_C -> {
                     schemeIndex = (schemeIndex + 1) % ColorScheme.all().size();
                     updateTitle();

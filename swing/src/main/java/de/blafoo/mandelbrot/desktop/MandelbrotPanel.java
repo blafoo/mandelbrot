@@ -3,7 +3,6 @@ package de.blafoo.mandelbrot.desktop;
 import de.blafoo.mandelbrot.core.*;
 import org.jspecify.annotations.Nullable;
 
-import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -15,9 +14,9 @@ import java.io.File;
  */
 public class MandelbrotPanel extends JPanel {
 
-    private double centerX = -0.5;
-    private double centerY = 0.0;
-    private double zoom = 1.0;
+    private double centerX = RenderParams.DEFAULT_CENTER_X;
+    private double centerY = RenderParams.DEFAULT_CENTER_Y;
+    private double zoom = RenderParams.DEFAULT_ZOOM;
     private int maxIterations = 500;
     private ColorScheme colorScheme = ColorScheme.defaultScheme();
 
@@ -101,9 +100,9 @@ public class MandelbrotPanel extends JPanel {
     }
 
     public void resetView() {
-        centerX = -0.5;
-        centerY = 0.0;
-        zoom = 1.0;
+        centerX = RenderParams.DEFAULT_CENTER_X;
+        centerY = RenderParams.DEFAULT_CENTER_Y;
+        zoom = RenderParams.DEFAULT_ZOOM;
         startRender();
     }
 
@@ -171,10 +170,13 @@ public class MandelbrotPanel extends JPanel {
     public void saveImage(JFrame parent) {
         if (image == null) return;
         var chooser = new JFileChooser();
-        chooser.setSelectedFile(new File("mandelbrot.png"));
+        chooser.setSelectedFile(new File(currentParams().generateFilename()));
         if (chooser.showSaveDialog(parent) == JFileChooser.APPROVE_OPTION) {
             try {
-                ImageIO.write(image, "PNG", chooser.getSelectedFile());
+                int w = image.getWidth();
+                int h = image.getHeight();
+                int[] pixels = image.getRGB(0, 0, w, h, null, 0, w);
+                PngWriter.writeFile(pixels, w, h, chooser.getSelectedFile());
                 JOptionPane.showMessageDialog(parent, "Bild gespeichert!");
             } catch (Exception ex) {
                 JOptionPane.showMessageDialog(parent, "Fehler: %s".formatted(ex.getMessage()),

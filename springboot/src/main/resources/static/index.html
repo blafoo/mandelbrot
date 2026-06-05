@@ -65,7 +65,7 @@
         <button id="zoomOut">－ Zoom</button>
         <button id="save">💾 Speichern</button>
         <span style="margin-left:auto; font-size:12px; opacity:.7">
-            Linksklick: Zoom in · Rechtsklick: Zoom out · Mausrad: Zoom · Drag: Pan
+            Klick: Zoom in · Rechtsklick: Zoom out · Mausrad: Zoom · Drag: Pan
         </span>
     </header>
     <div id="stage">
@@ -143,28 +143,38 @@
             render();
         }
 
-        img.addEventListener('click', e => zoomAt(e.clientX, e.clientY, 2.0));
         img.addEventListener('contextmenu', e => { e.preventDefault(); zoomAt(e.clientX, e.clientY, 0.5); });
         img.addEventListener('wheel', e => {
             e.preventDefault();
             zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.25 : 1/1.25);
         }, { passive: false });
 
-        // Drag-Pan
+        // Drag-Pan (Linksklick) – Zoom-in nur bei echtem Klick ohne Drag-Bewegung
         let drag = null;
+        let dragged = false;
         img.addEventListener('mousedown', e => {
-            if (e.button !== 1 && !(e.button === 0 && e.shiftKey)) return;
+            if (e.button !== 0) return;
             drag = { x: e.clientX, y: e.clientY };
+            dragged = false;
             e.preventDefault();
         });
-        window.addEventListener('mouseup', () => drag = null);
+        window.addEventListener('mouseup', e => {
+            if (drag && !dragged && e.button === 0) {
+                zoomAt(e.clientX, e.clientY, 2.0);
+            }
+            drag = null;
+        });
         window.addEventListener('mousemove', e => {
             if (!drag) return;
+            const dx0 = e.clientX - drag.x;
+            const dy0 = e.clientY - drag.y;
+            if (!dragged && Math.abs(dx0) < 3 && Math.abs(dy0) < 3) return;
+            dragged = true;
             const r = img.getBoundingClientRect();
             const size = Math.min(state.width, state.height);
             const scale = 3.0 / (size * state.zoom);
-            const dx = (e.clientX - drag.x) * (state.width / r.width)  * scale;
-            const dy = (e.clientY - drag.y) * (state.height / r.height) * scale;
+            const dx = dx0 * (state.width / r.width)  * scale;
+            const dy = dy0 * (state.height / r.height) * scale;
             state.centerX -= dx; state.centerY -= dy;
             drag = { x: e.clientX, y: e.clientY };
             render();

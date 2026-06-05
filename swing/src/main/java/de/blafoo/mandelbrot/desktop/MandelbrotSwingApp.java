@@ -5,7 +5,7 @@ import de.blafoo.mandelbrot.core.ColorScheme;
 import javax.swing.*;
 import java.awt.*;
 
-public class MandelbrotApp {
+public class MandelbrotSwingApp {
 
     void main() {
         SwingUtilities.invokeLater(this::createAndShowUI);

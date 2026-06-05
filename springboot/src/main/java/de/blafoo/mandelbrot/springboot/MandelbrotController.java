@@ -30,9 +30,6 @@ import java.util.concurrent.Executors;
 @RequestMapping("/api")
 public class MandelbrotController {
 
-    private static final int MAX_DIMENSION  = 4096;
-    private static final int MAX_ITERATIONS = 10_000;
-
     private final ExecutorService renderPool = Executors.newVirtualThreadPerTaskExecutor();
     private final MandelbrotRenderer renderer = new MandelbrotRenderer(renderPool);
 
@@ -54,10 +51,9 @@ public class MandelbrotController {
             @RequestParam(defaultValue = "Classic") String scheme,
             @RequestParam(defaultValue = "false")  boolean download
     ) {
-        // Java 21+: Math.clamp ersetzt eigene clamp-Hilfsfunktion
-        width         = Math.clamp(width,  16, MAX_DIMENSION);
-        height        = Math.clamp(height, 16, MAX_DIMENSION);
-        maxIterations = Math.clamp(maxIterations, 50, MAX_ITERATIONS);
+        width         = Math.clamp(width,  16, RenderParams.MAX_DIMENSION);
+        height        = Math.clamp(height, 16, RenderParams.MAX_DIMENSION);
+        maxIterations = Math.clamp(maxIterations, 50, RenderParams.MAX_ITERATIONS);
         if (zoom <= 0) zoom = 1.0;
 
         ColorScheme cs = ColorScheme.all().stream()
@@ -75,8 +71,7 @@ public class MandelbrotController {
                 .contentType(MediaType.IMAGE_PNG)
                 .cacheControl(CacheControl.maxAge(Duration.ofMinutes(5)).cachePublic());
         if (download) {
-            var name = "mandelbrot_%.6f_%.6f_z%.2fx.png".formatted(centerX, centerY, zoom);
-            resp = resp.header("Content-Disposition", "attachment; filename=\"" + name + "\"");
+            resp = resp.header("Content-Disposition", "attachment; filename=\"" + params.generateFilename() + "\"");
         }
         return resp.body(png);
     }

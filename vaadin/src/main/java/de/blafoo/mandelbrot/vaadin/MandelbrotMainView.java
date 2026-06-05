@@ -38,10 +38,10 @@ public class MandelbrotMainView extends VerticalLayout {
 
     private final MandelbrotRenderService renderService;
 
-    private double centerX = -0.5;
-    private double centerY = 0.0;
-    private double zoom = 1.0;
-    private int maxIterations = 300;
+    private double centerX = RenderParams.DEFAULT_CENTER_X;
+    private double centerY = RenderParams.DEFAULT_CENTER_Y;
+    private double zoom = RenderParams.DEFAULT_ZOOM;
+    private int maxIterations = RenderParams.DEFAULT_ITERATIONS;
     private ColorScheme colorScheme = ColorScheme.defaultScheme();
 
     private final Image image = new Image();
@@ -101,10 +101,10 @@ public class MandelbrotMainView extends VerticalLayout {
         var panDown  = new Button(VaadinIcon.ARROW_DOWN.create(),  _ -> { centerY += 0.5 / zoom; refresh(); });
 
         var reset = new Button("Reset", VaadinIcon.REFRESH.create(), _ -> {
-            centerX = -0.5;
-            centerY = 0.0;
-            zoom = 1.0;
-            maxIterations = 300;
+            centerX = RenderParams.DEFAULT_CENTER_X;
+            centerY = RenderParams.DEFAULT_CENTER_Y;
+            zoom = RenderParams.DEFAULT_ZOOM;
+            maxIterations = RenderParams.DEFAULT_ITERATIONS;
             iterField.setValue(maxIterations);
             refresh();
         });
@@ -134,7 +134,7 @@ public class MandelbrotMainView extends VerticalLayout {
             if (png == null) {
                 return DownloadResponse.error(404, "Noch kein Bild gerendert");
             }
-            var name = "mandelbrot_%.6f_%.6f_z%.2fx.png".formatted(centerX, centerY, zoom);
+            var name = currentParams().generateFilename();
             return new DownloadResponse(new ByteArrayInputStream(png), name, "image/png", png.length);
         });
     }
