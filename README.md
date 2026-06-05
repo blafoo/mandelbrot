@@ -2,7 +2,7 @@
 
 # Apfelmännchen aka Mandelbrot set
 
-My own little application to visualize Apfelmännchen (aka the Mandelbrot set)
+My own little application to visualize Apfelmännchen (aka the Mandelbrot set) very, very fast. Faster than any other application!!1!
 
 ### Modules
 ##### Core 
@@ -14,7 +14,10 @@ Enjoy!
 
 Example images
 
-![Fire](https://github.com/blafoo/mandelbrot/blob/main/images/mandelbrot_0,373753_0,596020_z4814,82x.png?raw=true)
-![Ocean](https://github.com/blafoo/mandelbrot/blob/main/images/mandelbrot_-0,237953_-0,826216_z35,53x.png?raw=true)
+Fire
+![Fire](https://github.com/blafoo/mandelbrot/blob/master/images/mandelbrot_-0%2C237953_-0%2C826216_z35%2C53x.png?raw=true)
+
+Ocean
+![Ocean](https://github.com/blafoo/mandelbrot/blob/master/images/mandelbrot_0%2C373753_0%2C596020_z4814%2C82x.png?raw=true)
 
 
