@@ -1,37 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Stylisierte Mandelbrot-Silhouette (Hauptkardioide + Period-2-Knospe) -->
-<vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="108dp"
-    android:height="108dp"
-    android:viewportWidth="108"
-    android:viewportHeight="108">
+<bitmap xmlns:android="http://schemas.android.com/apk/res/android"
+    android:src="@drawable/logo"
+    android:gravity="center" />
 
-    <!-- Glow / äußerer Halo -->
-    <path
-        android:pathData="M78,54 C75,28 48,16 38,21 C22,28 14,40 14,54 C14,68 22,80 38,87 C48,92 75,80 78,54 Z M2,54 a10,10 0 1,0 20,0 a10,10 0 1,0 -20,0 Z"
-        android:fillColor="#4448AFFF" />
-
-    <!-- Mandelbrot-Hauptkörper (Kardioide) -->
-    <path
-        android:pathData="M76,54 C73,32 50,22 41,26 C26,32 19,42 19,54 C19,66 26,76 41,82 C50,86 73,76 76,54 Z"
-        android:fillColor="#FF80DEEA" />
-
-    <!-- Period-2-Bulb -->
-    <path
-        android:pathData="M5,54 a8,8 0 1,0 16,0 a8,8 0 1,0 -16,0 Z"
-        android:fillColor="#FF80DEEA" />
-
-    <!-- Innerer Akzent (Tiefe) -->
-    <path
-        android:pathData="M70,54 C68,40 52,32 44,36 C32,42 28,46 28,54 C28,62 32,66 44,72 C52,76 68,68 70,54 Z"
-        android:fillColor="#FF1A237E" />
-
-    <!-- Spirale aus kleinen Bulbs (Andeutung Selbstähnlichkeit) -->
-    <path
-        android:pathData="M82,54 a3,3 0 1,0 6,0 a3,3 0 1,0 -6,0 Z"
-        android:fillColor="#FF80DEEA" />
-    <path
-        android:pathData="M91,54 a2,2 0 1,0 4,0 a2,2 0 1,0 -4,0 Z"
-        android:fillColor="#FF80DEEA" />
-</vector>
 
