@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8" />
+    <title>Mandelbrot Viewer · Spring Boot</title>
+    <style>
+        :root { color-scheme: dark; }
+        body {
+            margin: 0;
+            background: #111;
+            color: #ddd;
+            font-family: system-ui, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+        header {
+            background: #1A237E;
+            padding: 8px 16px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        header h1 { font-size: 16px; margin: 0 12px 0 0; }
+        header label { font-size: 13px; }
+        header select, header input, header button {
+            background: #333; color: #eee;
+            border: 1px solid #555; padding: 4px 8px; border-radius: 4px;
+        }
+        header button { cursor: pointer; }
+        header button:hover { background: #448AFF; }
+        #stage {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+        #fractal {
+            cursor: crosshair;
+            max-width: 100%;
+            max-height: 100%;
+            background: #000;
+        }
+        footer {
+            font-size: 12px;
+            padding: 6px 16px;
+            background: #222;
+            font-family: monospace;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Mandelbrot Viewer</h1>
+        <label>Schema:
+            <select id="scheme"></select>
+        </label>
+        <label>Iterationen:
+            <input id="iter" type="number" min="50" max="10000" step="50" value="300" style="width:80px" />
+        </label>
+        <button id="reset">Reset</button>
+        <button id="zoomIn">＋ Zoom</button>
+        <button id="zoomOut">－ Zoom</button>
+        <button id="save">💾 Speichern</button>
+        <span style="margin-left:auto; font-size:12px; opacity:.7">
+            Klick: Zoom in · Rechtsklick: Zoom out · Mausrad: Zoom · Drag: Pan
+        </span>
+    </header>
+    <div id="stage">
+        <img id="fractal" alt="Mandelbrot" draggable="false" />
+    </div>
+    <footer id="status">Bereit.</footer>
+
+    <script>
+        const img = document.getElementById('fractal');
+        const status = document.getElementById('status');
+        const schemeSel = document.getElementById('scheme');
+        const iterInput = document.getElementById('iter');
+
+        const state = {
+            centerX: -0.5, centerY: 0.0, zoom: 1.0,
+            maxIterations: 300, scheme: 'Classic',
+            width: 0, height: 0
+        };
+
+        function fitSize() {
+            const stage = document.getElementById('stage');
+            state.width  = Math.max(320, Math.floor(stage.clientWidth));
+            state.height = Math.max(240, Math.floor(stage.clientHeight));
+        }
+
+        async function loadSchemes() {
+            const resp = await fetch('/api/schemes');
+            const list = await resp.json();
+            schemeSel.innerHTML = '';
+            list.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s.name; opt.textContent = s.name;
+                schemeSel.appendChild(opt);
+            });
+            schemeSel.value = state.scheme;
+        }
+
+        function render() {
+            fitSize();
+            const url = new URL('/api/mandelbrot.png', location.origin);
+            url.searchParams.set('width', state.width);
+            url.searchParams.set('height', state.height);
+            url.searchParams.set('centerX', state.centerX);
+            url.searchParams.set('centerY', state.centerY);
+            url.searchParams.set('zoom', state.zoom);
+            url.searchParams.set('maxIterations', state.maxIterations);
+            url.searchParams.set('scheme', state.scheme);
+            status.textContent = `Rendering ${state.width}×${state.height} · zoom=${state.zoom.toExponential(2)} · iter=${state.maxIterations} …`;
+            const t0 = performance.now();
+            const tmp = new Image();
+            tmp.onload = () => {
+                img.src = tmp.src;
+                status.textContent = `Re=${state.centerX.toFixed(8)} Im=${state.centerY.toFixed(8)} · zoom=${state.zoom.toExponential(2)} · iter=${state.maxIterations} · ${(performance.now()-t0).toFixed(0)} ms`;
+            };
+            tmp.src = url.toString();
+        }
+
+        function screenToComplex(sx, sy) {
+            const r = img.getBoundingClientRect();
+            const px = (sx - r.left) * (state.width / r.width);
+            const py = (sy - r.top)  * (state.height / r.height);
+            const size = Math.min(state.width, state.height);
+            const scale = 3.0 / (size * state.zoom);
+            return {
+                re: state.centerX + (px - state.width / 2) * scale,
+                im: state.centerY + (py - state.height / 2) * scale
+            };
+        }
+
+        function zoomAt(sx, sy, factor) {
+            const c = screenToComplex(sx, sy);
+            state.zoom *= factor;
+            state.centerX = c.re + (state.centerX - c.re) / factor;
+            state.centerY = c.im + (state.centerY - c.im) / factor;
+            render();
+        }
+
+        img.addEventListener('contextmenu', e => { e.preventDefault(); zoomAt(e.clientX, e.clientY, 0.5); });
+        img.addEventListener('wheel', e => {
+            e.preventDefault();
+            zoomAt(e.clientX, e.clientY, e.deltaY < 0 ? 1.25 : 1/1.25);
+        }, { passive: false });
+
+        // Drag-Pan (Linksklick) – Zoom-in nur bei echtem Klick ohne Drag-Bewegung
+        let drag = null;
+        let dragged = false;
+        img.addEventListener('mousedown', e => {
+            if (e.button !== 0) return;
+            drag = { x: e.clientX, y: e.clientY };
+            dragged = false;
+            e.preventDefault();
+        });
+        window.addEventListener('mouseup', e => {
+            if (drag && !dragged && e.button === 0) {
+                zoomAt(e.clientX, e.clientY, 2.0);
+            }
+            drag = null;
+        });
+        window.addEventListener('mousemove', e => {
+            if (!drag) return;
+            const dx0 = e.clientX - drag.x;
+            const dy0 = e.clientY - drag.y;
+            if (!dragged && Math.abs(dx0) < 3 && Math.abs(dy0) < 3) return;
+            dragged = true;
+            const r = img.getBoundingClientRect();
+            const size = Math.min(state.width, state.height);
+            const scale = 3.0 / (size * state.zoom);
+            const dx = dx0 * (state.width / r.width)  * scale;
+            const dy = dy0 * (state.height / r.height) * scale;
+            state.centerX -= dx; state.centerY -= dy;
+            drag = { x: e.clientX, y: e.clientY };
+            render();
+        });
+
+        document.getElementById('reset').onclick = () => {
+            state.centerX = -0.5; state.centerY = 0; state.zoom = 1; state.maxIterations = 300;
+            iterInput.value = 300; render();
+        };
+        document.getElementById('zoomIn').onclick  = () => zoomAt(window.innerWidth/2, window.innerHeight/2, 2.0);
+        document.getElementById('zoomOut').onclick = () => zoomAt(window.innerWidth/2, window.innerHeight/2, 0.5);
+        document.getElementById('save').onclick = () => {
+            // Server liefert mit ?download=true einen Content-Disposition-Header,
+            // der Browser zeigt den Speichern-Dialog.
+            const url = new URL('/api/mandelbrot.png', location.origin);
+            url.searchParams.set('width', state.width);
+            url.searchParams.set('height', state.height);
+            url.searchParams.set('centerX', state.centerX);
+            url.searchParams.set('centerY', state.centerY);
+            url.searchParams.set('zoom', state.zoom);
+            url.searchParams.set('maxIterations', state.maxIterations);
+            url.searchParams.set('scheme', state.scheme);
+            url.searchParams.set('download', 'true');
+            const a = document.createElement('a');
+            a.href = url.toString();
+            a.download = `mandelbrot_${state.centerX.toFixed(6)}_${state.centerY.toFixed(6)}_z${state.zoom.toFixed(2)}x.png`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+        };
+        schemeSel.onchange = () => { state.scheme = schemeSel.value; render(); };
+        iterInput.onchange = () => { state.maxIterations = parseInt(iterInput.value, 10) || 300; render(); };
+        window.addEventListener('resize', () => render());
+
+        loadSchemes().then(render);
+    </script>
+</body>
+</html>
+

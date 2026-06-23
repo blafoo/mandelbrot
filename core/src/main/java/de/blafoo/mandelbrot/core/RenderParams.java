@@ -21,6 +21,16 @@ public record RenderParams(
     public static final double DEFAULT_ZOOM       =  1.0;
     public static final int    DEFAULT_ITERATIONS =  300;
 
+    /// Maximale Bildgröße (Breite/Höhe) für Validierung in Web-Endpoints.
+    public static final int    MAX_DIMENSION      = 4096;
+    /// Maximale Iterationszahl für Validierung.
+    public static final int    MAX_ITERATIONS     = 10_000;
+
+    /// Erzeugt einen sinnvollen Dateinamen für das aktuelle Rendering.
+    public String generateFilename() {
+        return "mandelbrot_%.6f_%.6f_z%.2fx.png".formatted(centerX, centerY, zoom);
+    }
+
     /// Skalierungsfaktor für die Umrechnung Pixel → komplexe Ebene.
     public double scale() {
         double size = Math.min(width, height);

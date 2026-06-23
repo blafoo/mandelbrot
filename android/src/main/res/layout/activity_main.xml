@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="#000000"
+    android:fitsSystemWindows="true">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="#2D2D2D"
+        android:titleTextColor="#CCCCCC"
+        android:subtitleTextColor="#999999"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+        android:popupTheme="@style/ThemeOverlay.AppCompat.Light" />
+
+    <de.blafoo.mandelbrot.android.MandelbrotView
+        android:id="@+id/mandelbrot_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:focusable="true" />
+
+    <TextView
+        android:id="@+id/status_text"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#2D2D2D"
+        android:textColor="#AAAAAA"
+        android:textSize="12sp"
+        android:padding="6dp"
+        android:singleLine="true"
+        android:text="Berühren zum Erkunden • Pinch-to-Zoom • Doppel-Tipp zum Hineinzoomen" />
+
+</LinearLayout>
+
+

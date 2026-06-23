@@ -26,10 +26,78 @@
         </dependencies>
     </dependencyManagement>
 
-    <modules>
-        <module>core</module>
-        <module>vaadin</module>
-    </modules>
+    <profiles>
+
+        <!-- Swing, Java 25 -->
+        <profile>
+            <id>swing</id>
+            <modules>
+                <module>core</module>
+                <module>swing</module>
+            </modules>
+        </profile>
+
+        <!-- Android-Profil: Core + Android-App via Gradle -->
+        <profile>
+            <id>android</id>
+            <modules>
+                <module>core</module>
+                <module>android</module>
+            </modules>
+        </profile>
+
+        <!-- JavaFX-Profil: Core + JavaFX-App -->
+        <profile>
+            <id>javafx</id>
+            <modules>
+                <module>core</module>
+                <module>javafx</module>
+            </modules>
+        </profile>
+
+        <!-- OpenGL-Profil: Core + LWJGL/OpenGL-App -->
+        <profile>
+            <id>opengl</id>
+            <modules>
+                <module>core</module>
+                <module>opengl</module>
+            </modules>
+        </profile>
+
+        <!-- Spring-Boot-Profil: Core + Spring-Boot-4-Web-App -->
+        <profile>
+            <id>springboot</id>
+            <modules>
+                <module>core</module>
+                <module>springboot</module>
+            </modules>
+        </profile>
+
+        <!-- Vaadin-Profil: Core + Vaadin-Flow-Web-App -->
+        <profile>
+            <id>vaadin</id>
+            <modules>
+                <module>core</module>
+                <module>vaadin</module>
+            </modules>
+        </profile>
+
+        <!-- All-Profil: alle Varianten inkl. Android -->
+        <profile>
+            <id>all</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <modules>
+                <module>core</module>
+                <module>swing</module>
+                <module>javafx</module>
+                <module>opengl</module>
+                <module>springboot</module>
+                <module>vaadin</module>
+                <module>android</module>
+            </modules>
+        </profile>
+    </profiles>
 
 </project>
-

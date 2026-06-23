@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>de.blafoo.mandelbrot</groupId>
+        <artifactId>mandelbrot-viewer</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>mandelbrot-android</artifactId>
+    <packaging>pom</packaging>
+    <name>Mandelbrot Android</name>
+    <description>Android Mandelbrot Viewer</description>
+
+    <build>
+        <plugins>
+            <!--
+                Vorbedingung: Die Umgebungsvariable ANDROID_HOME muss gesetzt sein,
+                sonst kann der Android-Gradle-Build das Android SDK nicht finden.
+                Der Build soll in diesem Fall sofort und mit klarer Meldung abbrechen.
+            -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-enforcer-plugin</artifactId>
+                <version>3.4.1</version>
+                <executions>
+                    <execution>
+                        <id>enforce-android-home</id>
+                        <phase>validate</phase>
+                        <goals>
+                            <goal>enforce</goal>
+                        </goals>
+                        <configuration>
+                            <rules>
+                                <requireEnvironmentVariable>
+                                    <variableName>ANDROID_HOME</variableName>
+                                    <message>
+Die Umgebungsvariable ANDROID_HOME ist nicht gesetzt.
+Bitte ANDROID_HOME auf das Android-SDK-Verzeichnis setzen,
+z. B. C:\Users\&lt;User&gt;\AppData\Local\Android\Sdk
+                                    </message>
+                                </requireEnvironmentVariable>
+                            </rules>
+                            <fail>true</fail>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+
+            <!--
+                1. Core-Modul in lokales Maven-Repo installieren (falls nicht schon geschehen).
+                2. Gradle-Build für die Android-App aufrufen.
+            -->
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>gradle-build-android</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <workingDirectory>${project.basedir}</workingDirectory>
+                            <executable>cmd</executable>
+                            <arguments>
+                                <argument>/c</argument>
+                                <argument>gradlew.bat</argument>
+                                <argument>assembleDebug</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+</project>
+
+

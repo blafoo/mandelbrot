@@ -13,3 +13,4 @@
 /.idea/
 /vaadin/package-lock.json
 /vaadin/vite.generated.ts
+/vaadin/src/main/frontend/index.html
